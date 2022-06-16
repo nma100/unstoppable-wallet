@@ -16,13 +16,9 @@ class App extends React.Component {
   async process(e) {
     e.preventDefault();
 
-    console.log('getAllChains', await Covalent.getAllChains());
-
     let domain = document.getElementById('input-search').value;
     let chain = document.getElementById('select-chain').value;
 
-    console.log('process', chain, domain);
-    
     if (!domain) return;
 
     this.setState({ searching: true, tokenList: [] });
