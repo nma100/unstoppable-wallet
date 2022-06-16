@@ -6,18 +6,11 @@ import 'bootstrap-icons/font/bootstrap-icons.scss';
 
 class App extends React.Component {
 
-  /*
-    Gestion no result
-    Spinner
-    Shadow box
-    Styling
-  */
-
   constructor(props) {
     super(props);
     this.process = this.process.bind(this);
     this.onImageError = this.onImageError.bind(this);
-    this.state = { tokenList: [] };
+    this.state = { searching: false, tokenList: [] };
   }
 
   async process(e) {
@@ -29,21 +22,22 @@ class App extends React.Component {
     let chain = document.getElementById('select-chain').value;
 
     console.log('process', chain, domain);
-
+    
     if (!domain) return;
 
+    this.setState({ searching: true, tokenList: [] });
+
     Unstoppable.getDomainInfo(domain).then(domainInfo => {
-      console.log('domainInfo', domainInfo);
       let address = domainInfo.meta.owner;
-      console.log('address', address);
+      if (!address) throw 'domain not found';
       return Covalent.getTokenBalances(chain, address);
     }).then(balances => {
-      console.log('balances', balances);
       this.setState({tokenList: balances.data.items });
     }).catch(e => {
       console.error(e);
+    }).finally(() => {
+      this.setState({searching: false });
     })
-
   }
 
   onImageError(index) {
@@ -51,35 +45,38 @@ class App extends React.Component {
     document.getElementById('token-logo-' + index).innerHTML = noLogo;
   }
 
-  componentDidMount() {
-    console.log('componentDidMount');
-  }
-
   render() {
     return (
-      <div className="container">
+      <div className="container py-5">
 
-          <h1 className="my-5">Unstoppable Wallet !</h1>
-          
-          <form onSubmit={this.process} className="mb-4">
-            <div className="mb-3">
-              <input type="text" id="input-search" className="form-control form-control-lg" placeholder="Enter an unstoppable domain name" autoComplete="off"/>
-            </div>
-            <div className="mb-4">
-              <label htmlFor="select-chain" className="form-label">Blockchain</label>
-              <select id="select-chain" className="form-select" style={{ cursor: 'pointer' }}>
-                  <option value="1">Ethereum</option>
-                  <option value="56">Binance</option>
-                  <option value="137">Polygon </option>
-                  <option value="43114">Avalanche</option>
-                  <option value="42161">Arbitrum</option>
-                  <option value="1284">Moonbeam</option>
-              </select>
-            </div>
-            <button type="submit" className="btn btn-primary"><i className="bi bi-search me-2"></i> Show Wallet</button>
-          </form>
+          <div className='shadow p-4 mb-4'>
+            <h1 className="pt-2 pb-4">Wallet with Unstoppable</h1>
+            
+            <form onSubmit={this.process}>
+              <div className="mb-3">
+                <input type="text" id="input-search" className="form-control form-control-lg" placeholder="Enter an unstoppable domain name" autoComplete="off"/>
+              </div>
+              <div className="mb-4">
+                <label htmlFor="select-chain" className="form-label">Blockchain</label>
+                <select id="select-chain" className="form-select" style={{ cursor: 'pointer' }}>
+                    <option value="1">Ethereum</option>
+                    <option value="56">Binance</option>
+                    <option value="137">Polygon </option>
+                    <option value="43114">Avalanche</option>
+                    <option value="42161">Arbitrum</option>
+                    <option value="1284">Moonbeam</option>
+                </select>
+              </div>
+              <button type="submit" className="btn btn-primary"><i className="bi bi-search me-2"></i> Show Wallet</button>
+              {this.state.searching &&
+              <div className="spinner-border spinner-border-sm ms-4"  style={{ width: '1.6rem', height: '1.6rem' }}  role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              } 
+            </form>
+          </div>
 
-          <table className="table">
+          <table className="table table-striped">
             <tbody>
               { this.state.tokenList.map((token, index) => 
                 <tr key={index}>
@@ -90,9 +87,9 @@ class App extends React.Component {
                           onError={ () => this.onImageError(index) }
                           alt="" />
                   </td>
-                  <td>{ token.contract_ticker_symbol }</td>
-                  <td>{ token.contract_name }</td>
-                  <td>${ token.quote }</td>
+                  <td className="fw-bold" style={{ width: '4rem' }}>{ token.contract_ticker_symbol }</td>
+                  <td style={{ width: '12rem' }}>{ token.contract_name }</td>
+                  <td className='text-muted'>${ token.quote }</td>
                 </tr>
                 ) }
             </tbody>
@@ -101,7 +98,6 @@ class App extends React.Component {
       </div>
     );
   }
-
 }
 
 export default App;
