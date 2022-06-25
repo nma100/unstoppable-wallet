@@ -3,7 +3,7 @@ This application displays the assets of a user's wallet.
 
 User's wallet address is obtained with “UNS Domain Resolution API”.
 
-* Video demo : 
+* Video demo : https://youtu.be/bVk3ydEztBE
 * Live site : https://unstoppable-wallet.vercel.app
 
 ## Contact information
